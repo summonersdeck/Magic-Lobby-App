@@ -1,0 +1,35 @@
+Railway deployment failed — Build Error
+
+Regenerate the pnpm lockfile by running "pnpm install" locally and committing the updated pnpm-lock.yaml. The build failed because pnpm's frozen lockfile mode detected that the "overrides" configuration in pnpm-workspace.yaml does not match what is recorded in pnpm-lock.yaml. This is a pre-existing lockfile drift issue unrelated to the triggering commit, which only removed a GitHub Actions workflow file.
+
+Repository: https://github.com/summonersdeck/Magic-Lobby-App
+Branch: main · Commit: 538ed64 — remove jekyll workflow
+Deployment ID: d2a352ba-4651-4191-9da9-ac9290af4374
+Service ID: 908978c5-41bd-4ce1-97a1-5048f64292b6
+Environment ID: 027bd7b7-9f5f-4109-b4a5-3ff2dd3430c8
+
+---
+
+## Problem
+Service: @workspace/api-server, builder: RAILPACK, failure stage: BUILD_IMAGE.
+The build fails at the dependency install step with:
+  ERR_PNPM_LOCKFILE_CONFIG_MISMATCH  Cannot proceed with the frozen installation. The current "overrides" configuration doesn't match the value found in the lockfile
+  Update your lockfile using "pnpm install --no-frozen-lockfile"
+Railpack runs `pnpm install --frozen-lockfile --prefer-offline`, which refuses to proceed when the lockfile is out of sync.
+
+## Diagnosis
+The pnpm-workspace.yaml file defines a large `overrides` block (platform-specific binary exclusions for esbuild, lightningcss, @tailwindcss/oxide, rollup, @expo/ngrok-bin, plus an esbuild version pin and a tsx alias). The committed pnpm-lock.yaml also contains an `overrides` section, but pnpm 9.15.9 detects a mismatch between the two. The triggering commit only removed a GitHub Actions workflow file and did not touch any dependency files, so the drift was pre-existing. No packageManager field is set in package.json, so pnpm 9.15.9 was auto-selected by Railpack via mise.
+
+## Fix
+This fix cannot be expressed as a pure file edit because it requires running pnpm to resolve and regenerate the lockfile.
+
+1. In your local environment (or Replit shell), from the repo root, run:
+   pnpm install
+   This regenerates pnpm-lock.yaml so the overrides section matches the current pnpm-workspace.yaml.
+
+2. Commit and push the updated pnpm-lock.yaml:
+   git add pnpm-lock.yaml
+   git commit -m "fix: regenerate pnpm lockfile to fix overrides mismatch"
+   git push origin main
+
+3. Railway will automatically trigger a new deployment, which will now pass the frozen-lockfile check.
