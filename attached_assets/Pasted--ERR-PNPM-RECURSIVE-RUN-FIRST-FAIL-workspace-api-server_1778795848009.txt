@@ -1,0 +1,42 @@
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+> @workspace/api-server@0.0.0 start /app/artifacts/api-server
+    at async handleMainPromise (node:internal/modules/run_main:106:12)
+  throw new Error(
+Error: DATABASE_URL must be set. Did you forget to provision a database?
+Node.js v18.20.5
+        ^
+/app/artifacts/api-server:
+    at ModuleJob.run (node:internal/modules/esm/module_job:195:25)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:337:24)
+    at async loadESM (node:internal/process/esm_loader:34:7)
+> @workspace/api-server@0.0.0 start /app/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+Starting Container
+/app/lib/db/src/index.ts:8
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
+Exit status 1
+    at async ModuleLoader.import (node:internal/modules/esm/loader:337:24)
+    at async handleMainPromise (node:internal/modules/run_main:106:12)
+> @workspace/api-server@0.0.0 start /app/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+/app/lib/db/src/index.ts:8
+  throw new Error(
+        ^
+Error: DATABASE_URL must be set. Did you forget to provision a database?
+    at <anonymous> (/app/lib/db/src/index.ts:8:9)
+    at ModuleJob.run (node:internal/modules/esm/module_job:195:25)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:337:24)
+    at async loadESM (node:internal/process/esm_loader:34:7)
+    at async handleMainPromise (node:internal/modules/run_main:106:12)
+Node.js v18.20.5
+/app/artifacts/api-server:
+Exit status 1
+> node --enable-source-maps ./dist/index.mjs
+/app/lib/db/src/index.ts:8
+  throw new Error(
+        ^
+Error: DATABASE_URL must be set. Did you forget to provision a database?
+    at ModuleJob.run (node:internal/modules/esm/module_job:195:25)
+    at async handleMainPromise (node:internal/modules/run_main:106:12)
+Node.js v18.20.5
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 start: `node --enable-source-maps ./dist/index.mjs`
