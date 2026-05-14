@@ -1,0 +1,9 @@
+{
+  "buildCommand": "pnpm --filter @workspace/mtg-lobby run build",
+  "outputDirectory": "artifacts/mtg-lobby/dist/public",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
