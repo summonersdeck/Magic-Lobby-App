@@ -97,6 +97,15 @@ export default function Home() {
                 <Button type="submit" className="w-full font-bold" disabled={joinGame.isPending}>
                   {joinGame.isPending ? "Joining..." : "Join Lobby"}
                 </Button>
+                {joinGame.isError && (
+                  <p className="text-xs text-destructive text-center mt-2">
+                    No se pudo unir. Verifica el código o que el servidor esté activo.
+                    {" "}
+                    <span className="opacity-60">
+                      ({(joinGame.error as Error)?.message ?? "Error desconocido"})
+                    </span>
+                  </p>
+                )}
               </form>
             </TabsContent>
 
@@ -123,6 +132,15 @@ export default function Home() {
                 <Button type="submit" className="w-full font-bold" disabled={createGame.isPending}>
                   {createGame.isPending ? "Creating..." : "Create Lobby"}
                 </Button>
+                {createGame.isError && (
+                  <p className="text-xs text-destructive text-center mt-2">
+                    No se pudo conectar al servidor. Verifica que el backend esté activo.
+                    {" "}
+                    <span className="opacity-60">
+                      ({(createGame.error as Error)?.message ?? "Error desconocido"})
+                    </span>
+                  </p>
+                )}
               </form>
             </TabsContent>
           </Tabs>
