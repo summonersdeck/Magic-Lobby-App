@@ -12,7 +12,7 @@ import { Trash2, CheckCircle2, History } from "lucide-react";
 import logoUrl from "@assets/summonerdeck_1777491015118.webp";
 
 async function postCleanup(): Promise<{ deleted: number; message: string }> {
-  const base = import.meta.env.VITE_API_URL ?? "";
+  const base = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
   const res = await fetch(`${base}/api/games/cleanup`, { method: "POST" });
   if (!res.ok) throw new Error("Cleanup failed");
   return res.json();

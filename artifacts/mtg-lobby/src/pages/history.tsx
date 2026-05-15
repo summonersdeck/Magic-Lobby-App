@@ -31,7 +31,7 @@ interface GameSummary {
 }
 
 async function fetchGames(): Promise<GameSummary[]> {
-  const base = import.meta.env.VITE_API_URL ?? "";
+  const base = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
   const res = await fetch(`${base}/api/games?limit=50`);
   if (!res.ok) throw new Error("Failed to fetch games");
   return res.json();
