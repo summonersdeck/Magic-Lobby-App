@@ -21,6 +21,7 @@ import {
   updatePoisonCounters,
   updateExperienceCounters,
   revivePlayer,
+  endGame,
   getGameById,
   type Game,
   type Player,
@@ -120,6 +121,7 @@ type ClientMessage =
   | { type: "updatePoisonCounters"; playerId: string; delta: number }
   | { type: "updateExperienceCounters"; playerId: string; delta: number }
   | { type: "revivePlayer"; playerId: string }
+  | { type: "endGame" }
   | { type: "ping" };
 
 async function handleMessage(
@@ -201,6 +203,9 @@ async function handleMessage(
       break;
     case "revivePlayer":
       await revivePlayer(game, player, msg.playerId);
+      break;
+    case "endGame":
+      await endGame(game, player);
       break;
     case "ping":
       send(ws, { type: "pong" });

@@ -6,7 +6,7 @@ import { useGameSocket, getSession, clearSession } from "../hooks/use-game-socke
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Copy, Skull, Shield, Swords, WifiOff, LogOut, FastForward, Play, RefreshCcw, ScrollText, Users, Activity, BarChart2, Dices, Coins, Shuffle, X } from "lucide-react";
+import { Copy, Skull, Shield, Swords, WifiOff, LogOut, FastForward, Play, RefreshCcw, ScrollText, Users, Activity, BarChart2, Dices, Coins, Shuffle, X, Square } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Player, GameState, GameLogEntry, CommanderDamageEntry } from "@workspace/api-client-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -155,7 +155,7 @@ export default function Lobby() {
         <div className="flex items-center gap-2">
           {activeGame.status === "active" && (
             <div className="text-sm font-medium px-3 py-1 bg-accent/50 text-accent-foreground rounded-md border border-accent flex items-center gap-2">
-              <Swords className="w-4 h-4" /> Turn {activeGame.turnNumber}
+              <Swords className="w-4 h-4" /> Round {(activeGame as any).roundNumber ?? 1}
             </div>
           )}
 
@@ -344,6 +344,16 @@ export default function Lobby() {
               </div>
             </>
           )}
+          {activeGame.status === "active" && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => { if (confirm("¿Terminar la partida?")) sendAction({ type: "endGame" }); }}
+            >
+              <Square className="w-4 h-4 mr-2 fill-current" /> End Game
+            </Button>
+          )}
           <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10 ml-auto" onClick={() => sendAction({ type: "resetGame" })}>
             <RefreshCcw className="w-4 h-4 mr-2" /> Reset
           </Button>
@@ -359,7 +369,7 @@ export default function Lobby() {
             exit={{ height: 0, opacity: 0 }}
             className="bg-primary text-primary-foreground font-serif font-bold text-center py-2 text-lg shadow-md z-10"
           >
-            Turn {activeGame.turnNumber} — {activeGame.players.find(p => p.id === activeGame.currentTurnPlayerId)?.name}'s Turn
+            Round {(activeGame as any).roundNumber ?? 1} — {activeGame.players.find(p => p.id === activeGame.currentTurnPlayerId)?.name}'s Turn
           </motion.div>
         )}
       </AnimatePresence>

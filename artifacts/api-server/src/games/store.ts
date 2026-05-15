@@ -1,5 +1,5 @@
 import { customAlphabet } from "nanoid";
-import { eq, and, lt, desc } from "drizzle-orm";
+import { eq, and, lt, desc, or, sql } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { gamesTable, gameTokensTable } from "@workspace/db/schema";
 
@@ -51,7 +51,8 @@ export type GameLogKind =
   | "commanderTaxUpdated"
   | "poisonCounterUpdated"
   | "experienceCounterUpdated"
-  | "playerRevived";
+  | "playerRevived"
+  | "gameEnded";
 
 export type GameLogEntry = {
   id: string;
@@ -69,6 +70,8 @@ export type Game = {
   status: GameStatus;
   startingLife: number;
   turnNumber: number;
+  roundNumber: number;
+  roundStartPlayerId: string | null;
   currentTurnPlayerId: string | null;
   hostId: string;
   players: Player[];
@@ -246,6 +249,8 @@ export async function createGame(input: {
     status: "waiting",
     startingLife,
     turnNumber: 0,
+    roundNumber: 0,
+    roundStartPlayerId: null,
     currentTurnPlayerId: null,
     hostId: hostPlayer.id,
     players: [hostPlayer],
@@ -483,9 +488,11 @@ export async function startGame(game: Game, actor: Player): Promise<void> {
   if (game.status !== "waiting") return;
   game.status = "active";
   game.turnNumber = 1;
+  game.roundNumber = 1;
   const order = [...game.players].sort((a, b) => a.position - b.position);
   const first = order.find((p) => !p.isEliminated) ?? order[0];
   game.currentTurnPlayerId = first?.id ?? game.hostId;
+  game.roundStartPlayerId = game.currentTurnPlayerId;
   appendLog(game, {
     kind: "gameStarted",
     message: `Game started — ${first?.name ?? "Host"} goes first`,
@@ -533,9 +540,13 @@ export async function nextTurn(game: Game, actor: Player): Promise<void> {
   const nextPlayer = aliveOrder[nextIdx]!;
   game.currentTurnPlayerId = nextPlayer.id;
   game.turnNumber += 1;
+  // Increment round when turn wraps back to the beginning of the player order
+  if (currentIdx !== -1 && nextIdx === 0) {
+    game.roundNumber = (game.roundNumber ?? 1) + 1;
+  }
   appendLog(game, {
     kind: "turnAdvanced",
-    message: `Turn ${game.turnNumber} — ${nextPlayer.name}`,
+    message: `Round ${game.roundNumber ?? 1} — ${nextPlayer.name}'s turn`,
     actorId: actor.id,
     targetId: nextPlayer.id,
   });
@@ -851,12 +862,29 @@ export async function listRecentGames(limit = 50): Promise<GameSummary[]> {
   });
 }
 
+export async function endGame(game: Game, actor: Player): Promise<void> {
+  if (!actor.isHost) return;
+  if (game.status === "ended") return;
+  game.status = "ended";
+  appendLog(game, {
+    kind: "gameEnded",
+    message: `${actor.name} ended the game`,
+    actorId: actor.id,
+  });
+  await dbSave(game);
+}
+
 export async function cleanupOldGames(maxAgeHours = 12): Promise<{ deleted: number }> {
   const cutoff = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000);
   const rows = await db
     .select({ id: gamesTable.id, code: gamesTable.code })
     .from(gamesTable)
-    .where(lt(gamesTable.updatedAt, cutoff));
+    .where(
+      or(
+        lt(gamesTable.updatedAt, cutoff),
+        sql`${gamesTable.state}->>'status' = 'ended'`,
+      ),
+    );
 
   if (rows.length === 0) return { deleted: 0 };
 
